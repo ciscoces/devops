@@ -1,0 +1,8 @@
+---
+- name: Install Apache Server
+  include: install.yml
+  when: operation == "install"
+
+- name: Configure Apache and start the service
+  include: config.yml
+  when: operation == "config"

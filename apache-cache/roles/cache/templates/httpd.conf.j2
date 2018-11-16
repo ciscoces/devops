@@ -1,0 +1,62 @@
+User apache
+Group apache
+ServerRoot "/etc/httpd"
+DocumentRoot "/var/www/html"
+ServerAdmin ces-devops@cisco.com
+Listen 80
+Listen 3128
+
+Timeout 300
+KeepAlive On
+MaxKeepAliveRequests 100
+KeepAliveTimeout 15
+HostnameLookups Off
+ServerTokens Prod
+ServerSignature Off
+UseCanonicalName Off
+TraceEnable Off
+
+Include conf.modules.d/*.conf
+
+<IfModule mpm_prefork_module>
+    StartServers        200
+    MinSpareServers     50
+    MaxSpareServers     100
+    ServerLimit         1000
+    MaxRequestWorkers   1000
+    MaxConnectionsPerChild      1000
+</IfModule>
+
+<IfModule ssl_module>
+    SSLPassPhraseDialog exec:/usr/libexec/httpd-ssl-pass-dialog
+    SSLSessionCache shmcb:/run/httpd/sslcache(512000)
+    SSLSessionCacheTimeout 300
+    SSLRandomSeed startup file:/dev/urandom 256
+    SSLRandomSeed connect builtin
+</IfModule>
+
+<Directory />
+    AllowOverride none
+    Require all denied
+</Directory>
+
+<IfModule dir_module>
+    DirectoryIndex index.html
+</IfModule>
+
+<Files ".ht*">
+    Require all denied
+</Files>
+
+<IfModule mime_module>
+    TypesConfig /etc/mime.types
+</IfModule>
+
+LogLevel warn
+LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
+CustomLog /var/log/httpd/access.log combined
+ErrorLog /var/log/httpd/error.log
+
+EnableSendfile on
+
+IncludeOptional conf.d/*.conf

@@ -1,0 +1,5 @@
+---
+
+cache_http_conf: "/etc/httpd/conf"
+cache_http_confd: "/etc/httpd/conf.d"
+cache_http_mod_conf: "/etc/httpd/conf.modules.d"

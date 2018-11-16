@@ -1,0 +1,184 @@
+---
+
+- name: "Cache server | Create data directory"
+  file:
+    path: /data
+    state: directory
+  tags:
+    - "cache"
+    - "config"
+    - "filesystem_dir"
+
+- name: "Cache server | Configure permission of data directory"
+  file:
+    dest: /data
+    mode: 0755
+    owner: root
+    group: root
+    state: directory
+  tags:
+    - "cache"
+    - "config"
+    - "filesystem_perm"
+
+- name: "Cache server | Configure permission of cache directory"
+  file:
+    dest: /data/cache
+    mode: 0700
+    owner: apache
+    group: apache
+    selevel: s0
+    serole: object_r
+    setype: httpd_cache_t
+    seuser: system_u
+    state: directory
+  tags:
+    - "cache"
+    - "config"
+    - "filesystem_perm"
+
+- name: "Cache server | Remove modules which are not using"
+  file:
+    dest: "{{ cache_http_mod_conf }}/00-{{ item }}.conf"
+    state: absent
+  with_items:
+    - dav
+    - lua
+    - optional
+  tags:
+    - "cache"
+    - "config"
+    - "httpd_mod_remove"
+
+- name: "Cache server | Configre HTTP modules to be loaded"
+  copy:
+    src: "files/httpd-{{ item }}.conf"
+    dest: "{{ cache_http_mod_conf }}/00-{{ item }}.conf"
+    mode: 0644
+    owner: root
+    group: root
+    selevel: s0
+    serole: object_r
+    setype: httpd_config_t
+    seuser: system_u
+  with_items:
+    - base
+    - mpm
+    - proxy
+    - ssl
+    - systemd
+  notify:
+    - restart httpd
+  tags:
+    - "cache"
+    - "config"
+    - "httpd_mod_conf"
+
+- name: "Cache server | Configure HTTP cgi modules to be loaded"
+  copy:
+    src: "files/httpd-{{ item }}.conf"
+    dest: "{{ cache_http_mod_conf }}/01-{{ item }}.conf"
+    mode: 0644
+    owner: root
+    group: root
+    selevel: s0
+    serole: object_r
+    setype: httpd_config_t
+    seuser: system_u
+  with_items:
+    - cgi
+  notify:
+    - restart httpd
+  tags:
+    - "cache"
+    - "config"
+    - "httpd_mod_conf"
+
+- name: "Cache server | Remove default configs"
+  file:
+    dest: "{{ cache_http_confd }}/{{ item }}.conf"
+    state: absent
+  with_items:
+    - autoindex
+    - userdir
+    - welcome
+    - ssl
+  tags:
+    - "cache"
+    - "config"
+    - "httpd_default_conf_remove"
+
+- name: "Cache server | Copy HTTPD configuration in place"
+  template:
+    src: httpd.conf.j2
+    dest: "{{ cache_http_conf }}/httpd.conf"
+    owner: root
+    group: root
+    mode: 0644
+    selevel: s0
+    serole: object_r
+    setype: httpd_config_t
+    seuser: system_u
+  notify:
+    - restart httpd
+  tags:
+    - "cache"
+    - "config"
+    - "httpd_default_conf"
+
+- name: "Cache server | Copy httpd cache configuration in place"
+  template:
+    src: apache-cache.conf.j2
+    dest: "{{ cache_http_confd }}/apache-cache.conf"
+    owner: root
+    group: root
+    mode: 0644
+    selevel: s0
+    serole: object_r
+    setype: httpd_config_t
+    seuser: system_u
+  notify:
+    - reload httpd
+  tags:
+    - "cache"
+    - "config"
+    - "httpd_ces_conf"
+
+- name: "Cache server | Configure HTTPD server status page"
+  copy:
+    src: files/server-status.conf
+    dest: "{{ cache_http_confd }}/server-status.conf"
+    mode: 0644
+    owner: root
+    group: root
+    selevel: s0
+    serole: object_r
+    setype: httpd_config_t
+    seuser: system_u
+  notify:
+    - restart httpd
+  tags:
+    - "cache"
+    - "config"
+    - "httpd_status_conf"
+
+- name: "Cache server | Configure selinux policy for proxy port"
+  seport:
+    ports: 3128
+    proto: tcp
+    setype: http_port_t
+    state: present
+  tags:
+    - "cache"
+    - "config"
+    - "selinux"
+
+- name: "Cache server | Ensure httpd is started and enabled to start at boot"
+  service:
+    name=httpd
+    state=started
+    enabled=yes
+  tags:
+    - "cache"
+    - "config"
+    - "service"

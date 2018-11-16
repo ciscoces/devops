@@ -1,0 +1,48 @@
+---
+- name: "Cache Server | Install libselinux package"
+  yum:
+    name: libselinux-python
+    state: present
+  tags:
+    - "cache"
+    - "install"
+    - "package"
+
+- name: "Cache Server | Install libsemanage package"
+  yum:
+    name: libsemanage-python
+    state: present
+  tags:
+    - "cache"
+    - "install"
+    - "package"
+
+- name: "Cache Server | Install policycoreutils-python package"
+  yum:
+    name: policycoreutils-python
+    state: present
+  tags:
+    - "cache"
+    - "install"
+    - "package"
+
+- name: "Cache Server | Install HTTP Server package"
+  yum:
+    name: httpd
+    state: present
+  tags:
+    - "cache"
+    - "install"
+    - "package"
+
+
+- name: "Cache Server | Install mod_ssl package"
+  yum:
+    name: mod_ssl
+    state: present
+  tags:
+    - "cache"
+    - "install"
+    - "package"
+
+- include: config.yml

@@ -1,0 +1,20 @@
+<VirtualHost *:3128>
+    LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" | %{X-Forwarded-For}i | %U | %q | %v | %V | %{Host}i | %D | %T" akamaiext
+    ErrorLog /var/log/httpd/proxy-error.log
+    CustomLog /var/log/httpd/proxy-access.log akamaiext
+
+    RewriteEngine On
+    RewriteOptions AllowAnyURI
+
+    ProxyRequests On
+    ProxyVia On
+    ProxyPreserveHost On
+
+    CacheEnable disk http://
+    CacheDefaultExpire 3600
+    CacheRoot "/data/cache/"
+    CacheDirLevels 1
+    CacheDirLength 3
+    # Cache only files under 200M in size
+    CacheMaxFileSize 314572800
+</VirtualHost>

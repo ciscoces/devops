@@ -1,0 +1,16 @@
+#
+# Configuration options for systemd service, htcacheclean.service.
+# See htcacheclean(8) for more information on available options.
+#
+
+# Interval between cache clean runs, in minutes
+INTERVAL=60
+
+# Default cache root.
+CACHE_ROOT=/data/cache
+
+# Cache size limit in bytes (K=Kbytes, M=Mbytes)
+LIMIT=10000M
+
+# Any other options...
+OPTIONS="-n -t"
